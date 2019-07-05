@@ -37,8 +37,8 @@ def mark_possessions(file_name, out_file_name):
     poss_flag_1 = False
     poss_flag_2 = False
     poss_end_time = -1
-    poss_end_str_1 = '0,0,0,0,0,0,0,0,0,0,'
-    poss_end_str_2 = ',0,0,0,0,0,0,0\n'
+    poss_end_str_1 = '0,0,0,0,0,'
+    poss_end_str_2 = ',0,0,0,0,0,0,0,0,0,0,0,0\n'
 
     for play in plays_original:
         line_arr = play.split(",")
@@ -68,11 +68,8 @@ def mark_possessions(file_name, out_file_name):
                     (event_msg_type == 3 and action_type == 15 and option_1 == 1) or \
                     (event_msg_type == 3 and action_type == 16 and option_1 == 1) or \
                     (event_msg_type == 3 and action_type == 17 and option_1 == 1) or \
-                    (event_msg_type == 3 and action_type == 19 and option_1 == 1) or \
-                    (event_msg_type == 3 and action_type == 20 and option_1 == 1) or \
                     (event_msg_type == 3 and action_type == 22 and option_1 == 1) or \
                     (event_msg_type == 3 and action_type == 26 and option_1 == 1) or \
-                    (event_msg_type == 3 and action_type == 29 and option_1 == 1) or \
                     (event_msg_type == 5) or \
                     (event_msg_type == 13):
                 poss_flag_1 = True
@@ -85,11 +82,8 @@ def mark_possessions(file_name, out_file_name):
                     (event_msg_type == 3 and action_type == 15 and option_1 == 0) or \
                     (event_msg_type == 3 and action_type == 16 and option_1 == 0) or \
                     (event_msg_type == 3 and action_type == 17 and option_1 == 0) or \
-                    (event_msg_type == 3 and action_type == 19 and option_1 == 0) or \
-                    (event_msg_type == 3 and action_type == 20 and option_1 == 0) or \
                     (event_msg_type == 3 and action_type == 22 and option_1 == 0) or \
-                    (event_msg_type == 3 and action_type == 26 and option_1 == 0) or \
-                    (event_msg_type == 3 and action_type == 29 and option_1 == 0):
+                    (event_msg_type == 3 and action_type == 26 and option_1 == 0):
                 poss_flag_1 = True
                 free_throw_team = team_id
 
@@ -100,6 +94,7 @@ def mark_possessions(file_name, out_file_name):
             plays_updated.write(f'{play}')
 
         line_number += 1
+    plays_updated.write(f'{poss_end_str_1}50000{poss_end_str_2}')
 
 
 def split_games(in_file_name, out_folder_name):
@@ -140,5 +135,3 @@ def split_games(in_file_name, out_folder_name):
 
 
 # split_games('Play_by_Play_Processed_Time.csv', 'games')
-
-mark_possessions('games/1ea0a33aafb4a3cb31ba79cff049300c.csv', 'sample_game.csv')

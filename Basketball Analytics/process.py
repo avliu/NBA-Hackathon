@@ -1,14 +1,13 @@
 import pandas as pd
 import models
-import os
 
 
-def process_game(game_id, lineups_file_name, output_file_name):
+def process_game(input_dir, output_file_dir, game_id, lineups_file_name):
     lineups = pd.read_csv(filepath_or_buffer=lineups_file_name, sep='\t')
 
-    game = models.Game(game_id, lineups)
+    game = models.Game(output_file_dir, game_id, lineups)
 
-    file = open(f'games/{game_id}.csv', "r")
+    file = open(f'{input_dir}/{game_id}.csv', "r")
 
     line_number = 0
 
@@ -31,22 +30,30 @@ def process_game(game_id, lineups_file_name, output_file_name):
             if int(line_dict['event_msg_type']) == 8:
                 person1 = line_dict['person1']
                 person2 = line_dict['person2']
-                game.substitute(person1, person2)
+                time = line_dict['pc_time']
+                game.substitute(person1, person2, time)
 
             # score
             if int(line_dict['event_msg_type']) == 1 or \
                 (int(line_dict['event_msg_type']) == 3 and int(line_dict['option1']) == 1):
-                game.score(line_dict['team_id'], int(line_dict['option1']))
+                team_id = line_dict['team_id']
+                option1 = int(line_dict['option1'])
+                pc_time = int(line_dict['pc_time'])
+                game.score(team_id, option1, pc_time)
 
             # possession completed
+            if int(line_dict['event_msg_type']) == 0:
+                pc_time = int(line_dict['pc_time'])
+                game.new_possession(pc_time)
 
         line_number += 1
-
-    game.finish(output_file_name)
 
 
 game_ids_file = open('Game_ids.txt', 'r')
 game_ids = game_ids_file.read().split(',')
 
+# for game_id in game_ids:
+#     preprocess.mark_possessions(f'games/{game_id}.csv', f'games_marked/{game_id}.csv')
+
 for game_id in game_ids:
-    process_game(game_id, 'Game_Lineup.txt', 'Output.txt')
+    process_game('games_marked', 'output', game_id, 'Game_Lineup.txt')
