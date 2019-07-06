@@ -1,11 +1,9 @@
-import pandas as pd
 import models
 
 
 def process_game(input_dir, output_file_dir, game_id, lineups_file_name):
-    lineups = pd.read_csv(filepath_or_buffer=lineups_file_name, sep='\t')
 
-    game = models.Game(output_file_dir, game_id, lineups)
+    game = models.Game(output_file_dir, game_id, lineups_file_name)
 
     file = open(f'{input_dir}/{game_id}.csv', "r")
 
