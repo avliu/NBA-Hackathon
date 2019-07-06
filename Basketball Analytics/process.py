@@ -1,4 +1,5 @@
 import models
+import pandas as pd
 
 
 def process_game(input_dir, output_file_dir, game_id, lineups_file_name):
@@ -53,5 +54,11 @@ game_ids = game_ids_file.read().split(',')
 # for game_id in game_ids:
 #     preprocess.mark_possessions(f'games/{game_id}.csv', f'games_marked/{game_id}.csv')
 
+# for game_id in game_ids:
+#     process_game('games_marked', 'output', game_id, 'Game_Lineup.txt')
+
+df = pd.DataFrame(columns=('Game_ID', 'Player_ID', 'OffRtg', 'DefRtg'))
 for game_id in game_ids:
-    process_game('games_marked', 'output', game_id, 'Game_Lineup.txt')
+    df = df.append(pd.read_csv(f'output/{game_id}.csv'), ignore_index=True)
+
+df.to_csv('Alex_Liu_Q1_BBALL.csv', index=False)

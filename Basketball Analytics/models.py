@@ -122,6 +122,7 @@ class Game:
 
     def finish(self):
         file = open(f'{self.output_dir}/{self.game_id}.csv', 'wt')
+        file.write('Game_ID,Player_ID,OffRtg,DefRtg\n')
         for player in self.all_players.index:
             off_points = int(self.all_players.loc[player, 'off_points'])
             def_points = int(self.all_players.loc[player, 'def_points'])
