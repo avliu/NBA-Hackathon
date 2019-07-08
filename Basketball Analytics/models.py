@@ -66,11 +66,9 @@ class Game:
 
         for scoring_player in scoring_players:
             if self.all_players.at[scoring_player, 'Team_id'] == team_id:
-                self.all_players.at[scoring_player, 'off_points'] = \
-                    self.all_players.at[scoring_player, 'off_points'] + score
+                self.all_players.at[scoring_player, 'off_points'] += score
             else:
-                self.all_players.at[scoring_player, 'def_points'] = \
-                    self.all_players.at[scoring_player, 'def_points'] + score
+                self.all_players.at[scoring_player, 'def_points'] += score
 
     def new_period(self):
         self.period += 1
