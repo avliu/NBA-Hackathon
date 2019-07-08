@@ -2,6 +2,7 @@ import pandas as pd
 
 
 class Game:
+
     def __init__(self, output_dir, game_id, lineups_file):
 
         lineups = pd.read_csv(filepath_or_buffer=lineups_file, sep='\t')
@@ -14,17 +15,19 @@ class Game:
         on_players = on_players.set_index('Person_id')
 
         teams = all_players['Team_id'].unique()
-        self.all_players = all_players
-        self.on_players = on_players
-        self.lineups = lineups
         self.teams = teams
+        self.lineups = lineups
         self.scores = dict(zip(teams, [0, 0]))
         self.poss = 0
         self.period = 1
         self.game_id = game_id
         self.output_dir = output_dir
 
+        # notable fields
+        self.all_players = all_players
+        self.on_players = on_players
         self.queue = pd.DataFrame(columns=['leaving', 'entering', 'sub_time'])
+
         print(f'processing game {game_id}')
 
     def substitute(self, leaving_player, entering_player, sub_time):
@@ -35,14 +38,17 @@ class Game:
     def new_possession(self, poss_end_time):
         self.poss += 1
 
+        # finding players to assign possession
         poss_players = set(self.on_players.index)
         for i in range(0, self.queue.shape[0]):
             if int(self.queue.loc[i, 'sub_time']) > poss_end_time:
                 poss_players.add(self.queue.loc[i, 'entering'])
 
+        # assigning possession
         for poss_player in poss_players:
             self.all_players.loc[poss_player, 'poss'] += 1
 
+        # performing actual substitutions to reflect next possession's on-court players
         for i in range(0, self.queue.shape[0]):
             leaving_player= self.queue.loc[i, 'leaving']
             entering_player = self.queue.loc[i, 'entering']
@@ -53,17 +59,20 @@ class Game:
                 as_list[idx] = entering_player
                 self.on_players.index = as_list
 
+        # clear the queue
         self.queue = pd.DataFrame(columns=['leaving', 'entering', 'sub_time'])
 
     def score(self, team_id, score, score_time):
         self.scores[team_id] += score
 
+        # finding players to assign score
         scoring_players = set(self.on_players.index)
         for i in range(0, self.queue.shape[0]):
             if int(self.queue.loc[i, 'sub_time']) > score_time:
                 scoring_players.remove(self.queue.loc[i, 'leaving'])
                 scoring_players.add(self.queue.loc[i, 'entering'])
 
+        # assigning score
         for scoring_player in scoring_players:
             if self.all_players.at[scoring_player, 'Team_id'] == team_id:
                 self.all_players.at[scoring_player, 'off_points'] += score
@@ -73,6 +82,7 @@ class Game:
     def new_period(self):
         self.period += 1
 
+        # finding players substituted between possessions
         next_on_players = set(self.lineups.loc[(self.lineups['Game_id'] == self.game_id) &
                                           (self.lineups['Period'] == self.period)]['Person_id'].values.tolist())
         old_on_players = set(self.on_players.index)
@@ -80,9 +90,10 @@ class Game:
             old_on_players.remove(self.queue.loc[i, 'leaving'])
             old_on_players.add(self.queue.loc[i, 'entering'])
 
+        # not end of game
         if len(next_on_players) > 0:
 
-            # work-around for keeping teams in on_players correct
+            # hacky work-around for keeping team_id's in on_players correct
             in_players_unordered = list(next_on_players.difference(old_on_players))
             out_players_unordered = list(old_on_players.difference(next_on_players))
             in_players_0 = list()
@@ -109,9 +120,11 @@ class Game:
             in_players = in_players_0 + in_players_1
             out_players = out_players_0 + out_players_1
 
+            # append substitutions to queue
             for i, j in zip(out_players, in_players):
                 self.queue = self.queue.append({'leaving': i, 'entering': j, 'sub_time': 0}, ignore_index=True)
 
+        # end of game
         else:
             for i in old_on_players:
                 self.queue = self.queue.append({'leaving': i, 'entering': None, 'sub_time': 0}, ignore_index=True)
